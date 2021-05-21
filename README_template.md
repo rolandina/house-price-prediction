@@ -4,14 +4,14 @@
 
 House price prediction project consists from files:
 
-- [house_price_prediction.ipynb](https://github.com/rolandina/house-price-prediction/house_price_prediction.ipynb) - notebook file where you can do prediction 
-- [viz.py](https://github.com/rolandina/house-price-prediction/viz.py) - file with view functions you will find in notebook
-- [model.py](https://github.com/rolandina/house-price-prediction/model.py)
-- [data.py](https://github.com/rolandina/house-price-prediction/data.py)
-- [data/data_description.txt](https://github.com/rolandina/house-price-prediction/data/data_description.txt)
-- [data/train.csv](https://github.com/rolandina/house-price-prediction/data/train.csv)
-- [data/test.csv](https://github.com/rolandina/house-price-prediction/data/test.csv)
-- [environment.yml](https://github.com/rolandina/house-price-prediction/viz.py/environment.yml) -  file with prerequisites libraries
+- [house_price_prediction.ipynb](https://github.com/rolandina/house-price-prediction/blob/main/house_price_prediction.ipynb) - notebook file where you can do prediction 
+- [viz.py](https://github.com/rolandina/house-price-prediction/blob/main/viz.py) - file with view functions you will find in notebook
+- [model.py](https://github.com/rolandina/house-price-prediction/blob/main/model.py)
+- [data.py](https://github.com/rolandina/house-price-prediction/blob/main/data.py)
+- [data/data_description.txt](https://github.com/rolandina/house-price-prediction/blob/main/data/data_description.txt)
+- [data/train.csv](https://github.com/rolandina/house-price-prediction/blob/main/data/train.csv)
+- [data/test.csv](https://github.com/rolandina/house-price-prediction/blob/main/data/test.csv)
+- [environment.yml](https://github.com/rolandina/house-price-prediction/blob/main/environment.yml) -  file with prerequisites libraries
 
 In notebook you have access to function:
 
