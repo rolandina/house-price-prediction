@@ -1,5 +1,5 @@
-from data import *
-from model import *
+import data as d
+import model as m
 
 from ipywidgets import interact, interactive, fixed, interact_manual
 import ipywidgets as widgets
@@ -7,201 +7,146 @@ import ipywidgets as widgets
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def show_data_analysis():
-    
-    df = prepare_data() # prepare function
-    # plot
-    target = 'SalePrice'
-    numerical_features = create_list_numeric_columns(df)
-    categorical_features = create_list_categoric_columns(df)
-
-
-    plot_numeric_features(df, numerical_features)
-    plot_categorical_features(df, categorical_features, target)
-    plot_res_corr(df, numerical_features, target)
-
-
-def create_list_numeric_columns(df):
-    return [column for column in df.columns if df[column].dtypes == "float" or (len(df[column].unique())>=15 and df[column].dtypes == "int")]
-
-def create_list_categoric_columns(df):
-    return [column for column in df.columns if df[column].dtypes != "float" and df[column].dtypes != "int"] + [column for column in df.columns if df[column].dtypes == "int" and len(df[column].unique())<15]
-
-
-def plot_numeric_features(df, numerical_features_list):
-    import seaborn as sns
-    import matplotlib.pyplot as plt
-    sns.set()  # Setting seaborn as default style even if use only matplotlib
-    sns.set_palette("Paired")  # set color palette
-    fig, axes = plt.subplots(nrows=len(numerical_features_list),
-                             ncols=2,
-                             figsize=(10, 3* len(numerical_features_list)))
-    for i, feature in enumerate(numerical_features_list):
-        sns.histplot(data=df, x=feature, kde=True, ax=axes[i, 0])
-        sns.boxplot(data=df, x=feature, ax=axes[i, 1])
-    plt.tight_layout()
-    plt.show()
-
-
-def plot_categorical_features(df, features_list, label_feature):  
-    import seaborn as sns
-    import matplotlib.pyplot as plt
-    sns.set()  # Setting seaborn as default style even if use only matplotlib
-    sns.set_palette("Paired")  # set color palette
-    fig, axes = plt.subplots(nrows=len(features_list),
-                             ncols=1,
-                             figsize=(14, 4* len(features_list)))
-    for i, feature in enumerate(features_list):
-        
-        df_group = df[[feature, label_feature]].groupby(feature).count()
-        #print(df_group)
-        sns.boxplot(data=df, x=feature, y= label_feature, ax=axes[i])
-        sns.swarmplot(data=df, x=feature, y= label_feature, ax=axes[i], color=".25", size = 2)
-        if len(df[feature].unique())>20:
-            plt.xticks(rotation=45)
-        axes[i].set_title(f"{label_feature} by {feature}")
-    plt.tight_layout()
-    plt.show()
-    
-def plot_res_corr(df, features, label): 
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-    n = len(features)-1
-
-    fig, axes = plt.subplots(nrows=n,
-                             ncols=2,
-                             figsize=(10, 4*n))
-    i = 0
-    for f in features: 
-        if f  != label:
-                sns.regplot(data=df, x=f, y=label, color='blue', ax=axes[i, 0])
-                sns.residplot(data=df, x=f, y=label, color='red', ax = axes[i, 1])
-                i+=1
-            
-# show_plots
-def show_plots():
-    #prepare_data()
-    return
-
-
-
-## house price prediction
-def prepare_widgets(df):
-    house = {col: 0 for col in df.columns}
-    for key in house.keys():
-        if df[key].dtypes == 'int' or df[key].dtypes == 'float':
-            if len(df[key].unique())>10:
-                house[key] = [df[key].min(), df[key].max()]
-            #print(f'{key} :{df[key].unique()} ')
-            elif len(df[key].unique())<=10:
-                house[key] = list(df[key].unique())
-        else:
-            house[key] = list(df[key].unique())
-    return house
-
-
 features = ['LotArea','OverallQual','YearBuilt', 'YearRemodAdd', 'GrLivArea', 'TotRmsAbvGrd', 'GarageArea', 'Fireplaces']
 
-def create_house(a,b,c,d,e,f,g,j):
-    import random
-    df = prepare_data()
-    m1 = HousePredictionModel(df,'SalePrice')
-    df = df.drop(columns = ['SalePrice'])
-
-    wid_vals = prepare_widgets(df)
+class View:
+  
+    def __init__(self):
+        self.__data = d.Data()
+        self.__model = m.HousePredictionModel()
+        self.__test = self.__data.get_prepared_test_data()
+        self.__wid_val = widget_predict(self.__test)
     
+    def show_stats_model_info(self):
+        self.__model.show_stat_model_info()
+
+    def __set_model(self, mod_type):
+        if mod_type == 0:
+            model = self.__model.skit_mod
+            print('You set simple Linear Regression model.')
+        elif mod_type == 1:
+            model = self.__model.create_model(mod_type)
+            print('You set Linear Regression model with cross validation.')
+        else: 
+            print('Unknown type of model. Keep the simple model.')
+            model = self.__model.skit_mod
+        return model
+
+    def __model_info_and_evoluation(self, mod_type):
+        #mod = int(input("Type 0 for simple model and 1 for model with cross validation:"))
+        model = self.__set_model(mod_type)
+        self.__model.show_model_info(model)
+        self.__model.show_test_metrics(model)
+
+
+    def show_data_analysis(self):
+        df = self.data.get_prepared_train_data()
+        target = self.data.target
+        m.plot_categorical_features(df, target)
+        m.plot_numeric_features(df)
+        m.plot_res_corr(df, target)
+
     
-    house = {col: [random.choice(wid_vals[col])] for col in df.columns}
-    for i, feature in enumerate(features):
-        if feature in house.keys():
-            if i == 0: house[feature] = [a]
-            if i == 1: house[feature] = [b]
-            if i == 2: house[feature] = [c] 
-            if i == 3: house[feature] = [d] 
-            if i == 4: house[feature] = [e]
-            if i == 5: house[feature] = [f]
-            if i == 6: house[feature] = [g] 
-            if i == 7: house[feature] = [j] 
-    #predict_price(house)
-    if house['YearBuilt'][0]>house['YearRemodAdd'][0]:
-        house['YearRemodAdd'][0] = house['YearBuilt'][0]
+    def __predict_house_price(self, mod_type, a,b,c,d,e,f,g,j):
+        import random
+        model = self.__set_model(mod_type)
 
-    hdf = pd.DataFrame(house)
+        house = {col: [random.choice(self.__wid_val[col])] for col in self.__test.columns}
+        for i, feature in enumerate(features):
+            if feature in house.keys():
+                if i == 0: house[feature] = [a]
+                if i == 1: house[feature] = [b]
+                if i == 2: house[feature] = [c] 
+                if i == 3: house[feature] = [d] 
+                if i == 4: house[feature] = [e]
+                if i == 5: house[feature] = [f]
+                if i == 6: house[feature] = [g] 
+                if i == 7: house[feature] = [j] 
+        #predict_price(house)
+        if house['YearBuilt'][0] > house['YearRemodAdd'][0]:
+            house['YearRemodAdd'][0] = house['YearBuilt'][0]
 
-    h = hdf.values
-    predict = m1.predict(h)
+        h = pd.DataFrame(house).values
 
-    print("Price of the house is {:,.0f} $".format(predict[0]))
- 
+        predict = self.__model.predict(model,h)
 
+        print("Price of the house is {:,.0f} $".format(predict[0]))
+    
 
+    def display_model(self):
+        w = interactive(self.__model_info_and_evoluation, mod_type = [0,1,2])
+        display(w)
 
+    def display_house_price_prediction(self):
+        w = interactive(self.__predict_house_price,  mod_type = [0,1,2], a=widgets.IntSlider(
+                                                        min=min(self.__wid_val[features[0]]), 
+                                                        max=max(self.__wid_val[features[0]]), 
+                                                        value=min(self.__wid_val[features[0]]), 
+                                                        step=1, 
+                                                        description=features[0]),
+                                    b=widgets.IntSlider(
+                                                        min=min(self.__wid_val[features[1]]), 
+                                                        max=max(self.__wid_val[features[1]]), 
+                                                        value=min(self.__wid_val[features[1]]), 
+                                                        step=1, 
+                                                        description=features[1]),
+                                    c=widgets.IntSlider(
+                                                        min=min(self.__wid_val[features[2]]), 
+                                                        max=max(self.__wid_val[features[2]]), 
+                                                        value=min(self.__wid_val[features[2]]), 
+                                                        step=1, 
+                                                        description=features[2]),
+                                    d=widgets.IntSlider(
+                                                        min=min(self.__wid_val[features[3]]), 
+                                                        max=max(self.__wid_val[features[3]]), 
+                                                        value=min(self.__wid_val[features[3]]), 
+                                                        step=1, 
+                                                        description=features[3]),
+                                    e=widgets.IntSlider(
+                                                        min=min(self.__wid_val[features[4]]), 
+                                                        max=max(self.__wid_val[features[4]]), 
+                                                        value=min(self.__wid_val[features[4]]), 
+                                                        step=1, 
+                                                        description=features[4]),
+                                    f=widgets.IntSlider(
+                                                        min=min(self.__wid_val[features[5]]), 
+                                                        max=max(self.__wid_val[features[5]]), 
+                                                        value=min(self.__wid_val[features[5]]), 
+                                                        step=1, 
+                                                        description=features[5]),
+                                    g=widgets.IntSlider(
+                                                        min=min(self.__wid_val[features[6]]), 
+                                                        max=max(self.__wid_val[features[6]]), 
+                                                        value=min(self.__wid_val[features[6]]), 
+                                                        step=1, 
+                                                        description=features[6]),
+                                    j=widgets.IntSlider(
+                                                        min=min(self.__wid_val[features[7]]), 
+                                                        max=max(self.__wid_val[features[7]]), 
+                                                        value=min(self.__wid_val[features[7]]), 
+                                                        step=1, 
+                                                        description=features[7]),
+                        )
 
-def predict_house_price():
-    df = prepare_data()
-    wid_vals = prepare_widgets(df)
-    w = interactive(create_house,  a=widgets.IntSlider(
-                                                    min=min(wid_vals[features[0]]), 
-                                                    max=max(wid_vals[features[0]]), 
-                                                    value=min(wid_vals[features[0]]), 
-                                                    step=1, 
-                                                    description=features[0]),
-                                b=widgets.IntSlider(
-                                                    min=min(wid_vals[features[1]]), 
-                                                    max=max(wid_vals[features[1]]), 
-                                                    value=min(wid_vals[features[1]]), 
-                                                    step=1, 
-                                                    description=features[1]),
-                                c=widgets.IntSlider(
-                                                    min=min(wid_vals[features[2]]), 
-                                                    max=max(wid_vals[features[2]]), 
-                                                    value=min(wid_vals[features[2]]), 
-                                                    step=1, 
-                                                    description=features[2]),
-                                d=widgets.IntSlider(
-                                                    min=min(wid_vals[features[3]]), 
-                                                    max=max(wid_vals[features[3]]), 
-                                                    value=min(wid_vals[features[3]]), 
-                                                    step=1, 
-                                                    description=features[3]),
-                                e=widgets.IntSlider(
-                                                    min=min(wid_vals[features[4]]), 
-                                                    max=max(wid_vals[features[4]]), 
-                                                    value=min(wid_vals[features[4]]), 
-                                                    step=1, 
-                                                    description=features[4]),
-                                f=widgets.IntSlider(
-                                                    min=min(wid_vals[features[5]]), 
-                                                    max=max(wid_vals[features[5]]), 
-                                                    value=min(wid_vals[features[5]]), 
-                                                    step=1, 
-                                                    description=features[5]),
-                                g=widgets.IntSlider(
-                                                    min=min(wid_vals[features[6]]), 
-                                                    max=max(wid_vals[features[6]]), 
-                                                    value=min(wid_vals[features[6]]), 
-                                                    step=1, 
-                                                    description=features[6]),
-                                j=widgets.IntSlider(
-                                                    min=min(wid_vals[features[7]]), 
-                                                    max=max(wid_vals[features[7]]), 
-                                                    value=min(wid_vals[features[7]]), 
-                                                    step=1, 
-                                                    description=features[7]),
-                       )
+        display(w)
 
-    display(w)
-
-
-
-def show_model_info():
-    df = prepare_data()
-    m1 = HousePredictionModel(df,'SalePrice')
-    m1.show_model_info()
+        
+        
+        
 
 
-def show_model_evaluation():
-    df = prepare_data()
-    m1 = HousePredictionModel(df,'SalePrice')
-    m1.display_test_metrics()
+### help functions
 
+## set parameters for widget house price prediction
+def widget_predict(df):
+    dict_params = {col: 0 for col in df.columns}
+    for key in dict_params.keys():
+        if df[key].dtypes == 'int' or df[key].dtypes == 'float':
+            if len(df[key].unique())>10:
+                dict_params[key] = [df[key].min(), df[key].max()]
+            #print(f'{key} :{df[key].unique()} ')
+            elif len(df[key].unique())<=10:
+                dict_params[key] = list(df[key].unique())
+        else:
+            dict_params[key] = list(df[key].unique())
+    return dict_params
