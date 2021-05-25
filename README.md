@@ -13,12 +13,13 @@ House price prediction project consists from files:
 - [data/test.csv](https://github.com/rolandina/house-price-prediction/blob/main/data/test.csv)
 - [environment.yml](https://github.com/rolandina/house-price-prediction/blob/main/environment.yml) -  file with prerequisites libraries
 
-In notebook you have access to function:
+In notebook you have access to function through the class View() from viz.py:
 
-- show_model_info() - to show regression model info
-- show_data_analysis() - to see statistical analysis of the data
-- show_model_evaluation() - to see model metrics based on test data 
-- predict_house_price() - to set parameters for a house and predict it final price
+- show_stats_model_info() - to show regression model info of statsmodels lib
+- show_data_analysis() - to see statistical analysis of the data. You can choose the analysis of numerical, categorical data or regression/residials 
+
+- display_model() - to see model metrics based on test data and predicted data versus real for different regression models
+- display_house_price_prediction() - to set parameters for a house and predict it final price
 
 ## General Prerequisites (for running and building)
 
