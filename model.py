@@ -51,7 +51,7 @@ class HousePredictionModel:
         self.target = data.target
         
         self.X, self.y = self.train_df[[col for col in self.train_df.columns if col != self.target]], self.train_df[self.target]
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X.values, self.y.values, test_size=0.40, random_state=1)
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X.values, self.y.values, test_size=0.20, random_state=1)
         self.stat_mod = sm.OLS(self.y, sm.add_constant(self.X)).fit()
 
         ## create simple model based on train data set only
@@ -86,6 +86,7 @@ class HousePredictionModel:
 
     def predict(self, model, X):
         return model.predict(X)
+        
 
     def show_test_metrics(self, model):
         # Get predictions
@@ -101,6 +102,7 @@ class HousePredictionModel:
         print("R2:", r2)
         # Plot predicted vs actual
         
+        fig = plt.figure(figsize = (14,9))
         plt.scatter(self.y_test, predictions)
         plt.xlabel(f'Actual {self.target}')
         plt.ylabel(f'Predicted {self.target}')
@@ -146,7 +148,7 @@ def plot_categorical_features(df, target):
         df_group = df[[feature, target]].groupby(feature).count()
         #print(df_group)
         sns.boxplot(data=df, x=feature, y= target, ax=axes[i])
-        sns.swarmplot(data=df, x=feature, y= target, ax=axes[i], color=".25", size = 2)
+        sns.swarmplot(data=df, x=feature, y= target, ax=axes[i], color=".25", size = 2) #swarmplots
         if len(df[feature].unique())>20:
             plt.xticks(rotation=45)
         axes[i].set_title(f"{target} by {feature}")
@@ -160,7 +162,7 @@ def plot_res_corr(df, target):
 
     fig, axes = plt.subplots(nrows=n,
                             ncols=2,
-                            figsize=(10, 4*n))
+                            figsize=(14, 4*n))
     i = 0
     for f in numerical_features: 
         if f  != target:

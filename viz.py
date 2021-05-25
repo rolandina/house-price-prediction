@@ -7,7 +7,9 @@ import ipywidgets as widgets
 import matplotlib.pyplot as plt
 import pandas as pd
 
-features = ['LotArea','OverallQual','YearBuilt', 'YearRemodAdd', 'GrLivArea', 'TotRmsAbvGrd', 'GarageArea', 'Fireplaces']
+features = ['LotArea','OverallQual','YearBuilt', 'YearRemodAdd', 'GrLivArea',
+ #'TotRmsAbvGrd', 
+ 'GarageArea', 'Fireplaces']
 
 class View:
     """Description of the class"""
@@ -70,7 +72,7 @@ class View:
 
         
     
-    def __predict_house_price(self, a,b,c,d,e,f,g,j):
+    def __predict_house_price(self, a,b,c,d,e,f,g):#,j=0):
         import random
 
         house = {col: [random.choice(self.__wid_val[col])] for col in self.__test.columns}
@@ -83,7 +85,7 @@ class View:
                 if i == 4: house[feature] = [e]
                 if i == 5: house[feature] = [f]
                 if i == 6: house[feature] = [g] 
-                if i == 7: house[feature] = [j] 
+                # if i == 7: house[feature] = [j] 
         #predict_price(house)
         if house['YearBuilt'][0] > house['YearRemodAdd'][0]:
             house['YearRemodAdd'][0] = house['YearBuilt'][0]
@@ -119,51 +121,51 @@ class View:
         w = interactive(self.__predict_house_price,  a=widgets.IntSlider(
                                                         min=min(self.__wid_val[features[0]]), 
                                                         max=max(self.__wid_val[features[0]]), 
-                                                        value=min(self.__wid_val[features[0]]), 
+                                                        value=max(self.__wid_val[features[0]]), 
                                                         step=1, 
                                                         description=features[0]),
                                     b=widgets.IntSlider(
                                                         min=min(self.__wid_val[features[1]]), 
                                                         max=max(self.__wid_val[features[1]]), 
-                                                        value=min(self.__wid_val[features[1]]), 
+                                                        value=max(self.__wid_val[features[1]]), 
                                                         step=1, 
                                                         description=features[1]),
                                     c=widgets.IntSlider(
                                                         min=min(self.__wid_val[features[2]]), 
                                                         max=max(self.__wid_val[features[2]]), 
-                                                        value=min(self.__wid_val[features[2]]), 
+                                                        value=max(self.__wid_val[features[2]]), 
                                                         step=1, 
                                                         description=features[2]),
                                     d=widgets.IntSlider(
                                                         min=min(self.__wid_val[features[3]]), 
                                                         max=max(self.__wid_val[features[3]]), 
-                                                        value=min(self.__wid_val[features[3]]), 
+                                                        value=max(self.__wid_val[features[3]]), 
                                                         step=1, 
                                                         description=features[3]),
                                     e=widgets.IntSlider(
                                                         min=min(self.__wid_val[features[4]]), 
                                                         max=max(self.__wid_val[features[4]]), 
-                                                        value=min(self.__wid_val[features[4]]), 
+                                                        value=max(self.__wid_val[features[4]]), 
                                                         step=1, 
                                                         description=features[4]),
                                     f=widgets.IntSlider(
                                                         min=min(self.__wid_val[features[5]]), 
                                                         max=max(self.__wid_val[features[5]]), 
-                                                        value=min(self.__wid_val[features[5]]), 
+                                                        value=max(self.__wid_val[features[5]]), 
                                                         step=1, 
                                                         description=features[5]),
                                     g=widgets.IntSlider(
                                                         min=min(self.__wid_val[features[6]]), 
                                                         max=max(self.__wid_val[features[6]]), 
-                                                        value=min(self.__wid_val[features[6]]), 
+                                                        value=max(self.__wid_val[features[6]]), 
                                                         step=1, 
                                                         description=features[6]),
-                                    j=widgets.IntSlider(
-                                                        min=min(self.__wid_val[features[7]]), 
-                                                        max=max(self.__wid_val[features[7]]), 
-                                                        value=min(self.__wid_val[features[7]]), 
-                                                        step=1, 
-                                                        description=features[7]),
+                                    # j=widgets.IntSlider(
+                                    #                     min=min(self.__wid_val[features[7]]), 
+                                    #                     max=max(self.__wid_val[features[7]]), 
+                                    #                     value=min(self.__wid_val[features[7]]), 
+                                    #                     step=1, 
+                                    #                     description=features[7]),
                         )
 
         display(w)

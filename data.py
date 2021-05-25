@@ -9,7 +9,7 @@ columns_to_save =  [
     #'ExterQual', ## good/not good
     #'Foundation', ## pcon/notpcon 
     'GrLivArea', 
-    'TotRmsAbvGrd', 
+    #'TotRmsAbvGrd', 
     'Fireplaces', 
     # 'GarageType', ## attached/detached
     #'GarageCars', 
@@ -38,8 +38,8 @@ class Data:
     __chosen_columns = columns_to_save
     __data_file = 'data.csv'
     __max_NaN_in_columns = 0.2 # if more than 20% nan column will be removed
-    __threshold_first =  0.2  #threshold_first (5%-min or max-95%) for abnormal filter
-    __threshold_second =  1.    #threshold_second (second diff., times) for abnormal filter
+    __threshold_first =  0.01  #threshold_first (5%-min or max-95%) for abnormal filter
+    __threshold_second =  0.05    #threshold_second (second diff., times) for abnormal filter
 
     def __init__(self):
         ## initialise with Data object with data frame
@@ -80,76 +80,21 @@ class Data:
 
 ### change this function for each data frame
     def __prepare_data(self, df, cols_to_save):  
+        new_df = df.copy()
 
     # drop columns
-        new_df = drop_columns(df, cols_to_save)
+        new_df = drop_columns(new_df, cols_to_save)
     # replace nan manually - function for manual correction for different data frame
         #replace_nan_manually(new_df)     
     # drop nan rows
-        #drop_nan_rows(new_df)
+        drop_nan_rows(new_df)
         
-        new_df = remove_nan_column(new_df, self.__max_NaN_in_columns)
+        #new_df = remove_nan_column(new_df, self.__max_NaN_in_columns)
         
     #remove anomaly
-        new_df = abnormal_filter(new_df, self.__threshold_first, self.__threshold_second)
+        #new_df = abnormal_filter(new_df, self.__threshold_first, self.__threshold_second)
         #print(f"Dropped {num_col - len(df.columns)} columns.")
         return new_df
-
-
-
-    def plot_numeric_features(self,df):
-        numerical_features = create_list_numeric_columns(df)
-        sns.set()  # Setting seaborn as default style even if use only matplotlib
-        sns.set_palette("Paired")  # set color palette
-        fig, axes = plt.subplots(nrows=len(numerical_features),
-                                ncols=2,
-                                figsize=(10, 3* len(numerical_features)))
-        for i, feature in enumerate(numerical_features):
-            sns.histplot(data=df, x=feature, kde=True, ax=axes[i, 0])
-            sns.boxplot(data=df, x=feature, ax=axes[i, 1])
-        plt.tight_layout()
-        plt.show()
-
-
-    def plot_categorical_features(self,df):  
-        categorical_features = create_list_categoric_columns(df)
-
-        sns.set()  # Setting seaborn as default style even if use only matplotlib
-        sns.set_palette("Paired")  # set color palette
-        fig, axes = plt.subplots(nrows=len(categorical_features),
-                                ncols=1,
-                                figsize=(14, 4* len(categorical_features)))
-        for i, feature in enumerate(categorical_features):
-            
-            df_group = df[[feature, self.target]].groupby(feature).count()
-            #print(df_group)
-            sns.boxplot(data=df, x=feature, y= self.target, ax=axes[i])
-            sns.swarmplot(data=df, x=feature, y= self.target, ax=axes[i], color=".25", size = 2)
-            if len(df[feature].unique())>20:
-                plt.xticks(rotation=45)
-            axes[i].set_title(f"{self.target} by {feature}")
-        plt.tight_layout()
-        plt.show()
-    
-
-
-
-
-    def plot_res_corr(self): 
-        numerical_features = create_list_numeric_columns()
-        n = len(numerical_features)-1
-
-        fig, axes = plt.subplots(nrows=n,
-                                ncols=2,
-                                figsize=(10, 4*n))
-        i = 0
-        for f in numerical_features: 
-            if f  != target:
-                    sns.regplot(data=df, x=f, y=target, color='blue', ax=axes[i, 0])
-                    sns.residplot(data=df, x=f, y=target, color='red', ax = axes[i, 1])
-                    i+=1
-
-
 
 
 
@@ -242,14 +187,6 @@ def replace_nan_manually(df):
     df['PoolQC'] = df['PoolQC'].replace(np.nan, 'No Pool')
     df['Fence'] = df['Fence'].replace(np.nan, 'No Fence')
     df['MiscFeature'] = df['MiscFeature'].replace(np.nan, 'No Feature')
-
-
-
-def create_list_numeric_columns(df):
-    return [column for column in df.columns if df[column].dtypes == "float" or (len(df[column].unique())>=15 and df[column].dtypes == "int")]
-
-def create_list_categoric_columns(df):
-    return [column for column in df.columns if df[column].dtypes != "float" and df[column].dtypes != "int"] + [column for column in df.columns if df[column].dtypes == "int" and len(df[column].unique())<15]
 
 
 
