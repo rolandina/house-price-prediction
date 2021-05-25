@@ -1,6 +1,6 @@
 # *HOUSE PRICE PREDICTION* 
 
-## *What is does?*
+## *What it does?*
 
 House price prediction project consists from files:
 
