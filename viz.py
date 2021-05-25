@@ -10,46 +10,68 @@ import pandas as pd
 features = ['LotArea','OverallQual','YearBuilt', 'YearRemodAdd', 'GrLivArea', 'TotRmsAbvGrd', 'GarageArea', 'Fireplaces']
 
 class View:
-  
+    """Description of the class"""
+
     def __init__(self):
         self.__data = d.Data()
         self.__model = m.HousePredictionModel()
         self.__test = self.__data.get_prepared_test_data()
+        self.__train = self.__data.get_prepared_train_data()
         self.__wid_val = widget_predict(self.__test)
+        self.__model_type = 0
     
-    def show_stats_model_info(self):
-        self.__model.show_stat_model_info()
+    def __set_model_type( self, mod_type):
+        self.__model_type = mod_type
 
     def __set_model(self, mod_type):
+
         if mod_type == 0:
             model = self.__model.skit_mod
-            print('You set simple Linear Regression model.')
         elif mod_type == 1:
             model = self.__model.create_model(mod_type)
-            print('You set Linear Regression model with cross validation.')
+        elif mod_type == 2:
+            model = self.__model.create_model(mod_type)
         else: 
-            print('Unknown type of model. Keep the simple model.')
             model = self.__model.skit_mod
         return model
 
     def __model_info_and_evoluation(self, mod_type):
         #mod = int(input("Type 0 for simple model and 1 for model with cross validation:"))
+
         model = self.__set_model(mod_type)
         self.__model.show_model_info(model)
         self.__model.show_test_metrics(model)
 
 
-    def show_data_analysis(self):
-        df = self.data.get_prepared_train_data()
-        target = self.data.target
-        m.plot_categorical_features(df, target)
-        m.plot_numeric_features(df)
-        m.plot_res_corr(df, target)
+    def __choose_plot(self, plot):
+        df = self.__train
+        target = self.__data.target
+        if plot == 0:
+            m.plot_categorical_features(df, target)
+        elif plot == 1:
+            m.plot_numeric_features(df)
+        elif plot == 2:
+            m.plot_res_corr(df, target)
 
+
+    def show_stats_model_info(self):
+        self.__model.show_stat_model_info()
+
+
+    def show_data_analysis(self):
     
-    def __predict_house_price(self, mod_type, a,b,c,d,e,f,g,j):
+        w = interactive(self.__choose_plot, plot = 
+                                widgets.Dropdown(
+                                options=[('Categorical', 0), ('Numerical', 1), ('Regression', 2)],
+                                value=0, 
+                                layout={'width': 'max-content'},
+                                description='Plot Type:',)  )
+        display(w)
+
+        
+    
+    def __predict_house_price(self, a,b,c,d,e,f,g,j):
         import random
-        model = self.__set_model(mod_type)
 
         house = {col: [random.choice(self.__wid_val[col])] for col in self.__test.columns}
         for i, feature in enumerate(features):
@@ -68,17 +90,33 @@ class View:
 
         h = pd.DataFrame(house).values
 
-        predict = self.__model.predict(model,h)
+        predict = self.__model.predict(self.__model.predict_mod, h)
 
         print("Price of the house is {:,.0f} $".format(predict[0]))
     
 
     def display_model(self):
-        w = interactive(self.__model_info_and_evoluation, mod_type = [0,1,2])
+
+        w = interactive(self.__model_info_and_evoluation, mod_type = 
+                                widgets.Dropdown(
+                                options=[('Linear Regression', 0), ('Ridge', 1), ('Lasso', 2)],
+                                value=0, 
+                                layout={'width': 'max-content'},
+                                description='Model:',)  )
         display(w)
 
     def display_house_price_prediction(self):
-        w = interactive(self.__predict_house_price,  mod_type = [0,1,2], a=widgets.IntSlider(
+
+        w0 = interactive(self.__set_model_type,  mod_type = widgets.Dropdown(
+                                options=[('Linear Regression', 0), ('Ridge', 1), ('Lasso', 2)],
+                                value=0, 
+                                layout={'width': 'max-content'},
+                                description='Model:',) )
+        display(w0)
+
+        self.__model.predict_mod = self.__set_model(self.__model_type)
+
+        w = interactive(self.__predict_house_price,  a=widgets.IntSlider(
                                                         min=min(self.__wid_val[features[0]]), 
                                                         max=max(self.__wid_val[features[0]]), 
                                                         value=min(self.__wid_val[features[0]]), 

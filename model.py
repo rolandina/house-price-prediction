@@ -5,6 +5,9 @@ import numpy as np
 
 import data as d
 
+sns.set()  # Setting seaborn as default style even if use only matplotlib
+sns.set_palette("Paired")  # set color palette
+
 ### statsmodels
 import statsmodels.api as sm
 import statsmodels.stats.api as sms
@@ -19,14 +22,26 @@ from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 
 ### models
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge, Lasso
 ### model selection
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import GridSearchCV, RepeatedKFold
+from sklearn.model_selection import GridSearchCV, RepeatedKFold, train_test_split, cross_val_score
 
+lr_params = [
+            {'normalize': [True, False]}  
+        ]
 
+ridge_parms = {'alpha': [1.0, 2.0, 3.0],
+    'fit_intercept': [True, False],
+    'max_iter': [500, 1000, 2500],
+    #'normalize': [True, False],
+    'solver': ['auto'], #, 'svd', 'cholesky', 'lsqr', 'sparse_cg'],
+    'tol': [1.e-2, 1.e-3, 1.e-4,]}
 
+lasso_parms = {'alpha': [1.0, 2., 3.],
+ 'max_iter': [500, 1000, 2500],
+ #'normalize': [True, False],
+ 'selection': ['cyclic'],
+ 'tol': [1.e-1, 1.e-2, 1.e-3, 1.e-4]}
 
 
 class HousePredictionModel:
@@ -41,24 +56,31 @@ class HousePredictionModel:
 
         ## create simple model based on train data set only
         self.skit_mod  = LinearRegression().fit(self.X_train, self.y_train)
+        self.predict_mod = LinearRegression().fit(self.X_train, self.y_train)
 
-##changed
     def create_model(self, mod_type):
+
         cv1 = RepeatedKFold(n_splits=10, n_repeats=10, random_state=1)
-        parameters= [
-            {'normalize': [True, False]}  
-        ]
-        Grid = GridSearchCV(LinearRegression(), parameters, scoring='r2',cv= cv1)
+        if mod_type == 1:
+            model = Ridge()
+            model_params = ridge_parms
+        elif mod_type == 2:
+            model = Lasso()
+            model_params = lasso_parms
+        else:
+            model = LinearRegression()
+            model_params = lr_params
+
+        Grid = GridSearchCV(model, model_params, scoring='r2',cv= cv1)
         Grid.fit(self.X_train, self.y_train)
         return Grid.best_estimator_
 
     def show_stat_model_info(self):
         print(self.stat_mod.summary())
 
-###changed
     def show_model_info(self, model):
         print(f"Model: {model}")
-        print(f"Model parameters: \n {model.get_params()}")
+        #print(f"Model parameters: \n {model.get_params()}")
         mod_score = model.score(self.X_test, self.y_test)
         print(f"Model score is {mod_score}")
 
@@ -116,8 +138,6 @@ def plot_numeric_features(df):
 def plot_categorical_features(df, target):  
     categorical_features = create_list_categoric_columns(df)
 
-    sns.set()  # Setting seaborn as default style even if use only matplotlib
-    sns.set_palette("Paired")  # set color palette
     fig, axes = plt.subplots(nrows=len(categorical_features),
                             ncols=1,
                             figsize=(14, 4* len(categorical_features)))
